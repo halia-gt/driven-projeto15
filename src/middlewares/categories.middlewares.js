@@ -16,7 +16,7 @@ async function nameCategoriesValidation (req, res, next) {
     }
     
     try {
-        const repeatedName = (await connection.query("SELECT name FROM categories WHERE name = $1;", [name]))?.rows[0];
+        const repeatedName = (await connection.query("SELECT name FROM categories WHERE name = $1;", [name])).rows[0];
         if (repeatedName) {
             res.sendStatus(409);
             return;
