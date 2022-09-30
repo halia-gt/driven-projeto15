@@ -1,5 +1,11 @@
 import joi from "joi";
 
+const searchCustomerSchema = joi.object({
+    cpf: joi.string()
+        .empty("")
+        .trim()
+});
+
 const customerSchema = joi.object({
     name: joi.string()
         .min(3)
@@ -18,4 +24,7 @@ const customerSchema = joi.object({
         .required()
 });
 
-export { customerSchema };
+export {
+    searchCustomerSchema,
+    customerSchema
+};

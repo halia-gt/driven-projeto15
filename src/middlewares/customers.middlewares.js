@@ -1,5 +1,23 @@
 import { connection } from "../database/db.js";
-import { customerSchema } from "../schemas/customers.schemas.js";
+import { customerSchema, searchCustomerSchema } from "../schemas/customers.schemas.js";
+
+async function customersSearchValidation(req, res, next) {
+    const { cpf } = req.query;
+    if (!cpf) {
+        next();
+        return;
+    }
+
+    const validation = searchCustomerSchema.validate({ cpf }, { abortEarly: false });
+    if (validation.error) {
+        const errors = validation.error.details.map(error => error.message);
+        res.status(422).send({ message: errors });
+        return;
+    }
+
+    res.locals.cpf = cpf;
+    next();
+}
 
 async function customerBodyValidation(req, res, next) {
     const { name, phone, cpf, birthday } = req.body;
@@ -37,4 +55,7 @@ async function customerBodyValidation(req, res, next) {
     }
 }
 
-export { customerBodyValidation };
+export {
+    customersSearchValidation,
+    customerBodyValidation
+};

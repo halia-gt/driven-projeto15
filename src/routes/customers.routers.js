@@ -1,9 +1,10 @@
 import express from "express";
-import { createCustomer } from "../controllers/customers.controllers.js";
-import { customerBodyValidation } from "../middlewares/customers.middlewares.js";
+import { createCustomer, readCustomers } from "../controllers/customers.controllers.js";
+import { customersSearchValidation, customerBodyValidation } from "../middlewares/customers.middlewares.js";
 
 const router = express.Router();
 
+router.get("/customers", customersSearchValidation, readCustomers);
 router.post("/customers", customerBodyValidation, createCustomer);
 
 export default router;
