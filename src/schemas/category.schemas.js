@@ -6,4 +6,4 @@ const categorySchema = joi.object({
         .trim()
 });
 
-export { categorySchema }
+export { categorySchema };
