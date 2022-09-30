@@ -1,5 +1,11 @@
 import joi from "joi";
 
+const searchGameSchema = joi.object({
+    name: joi.string()
+        .empty()
+        .trim()
+});
+
 const gamesSchema = joi.object({
     name: joi.string()
         .min(3)
@@ -22,4 +28,7 @@ const gamesSchema = joi.object({
         .required()
 });
 
-export { gamesSchema };
+export {
+    searchGameSchema,
+    gamesSchema
+};

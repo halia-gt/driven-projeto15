@@ -1,12 +1,22 @@
 import { connection } from "../database/db.js";
 
 async function readGames(req, res) {
-    const { name } = req.params;
+    const { name } = res.locals;
 
     try {
-        const games = await connection.query(`SELECT games.*, categories.name AS "categoryName" FROM games JOIN categories ON games."categoryId" = categories.id${ name ? ` WHERE name LIKE $1%;` : `;`}`);
+        if (name === undefined) {
+            const games = (await connection.query(
+                'SELECT games.*, categories.name AS "categoryName" FROM games JOIN categories ON games."categoryId" = categories.id;'
+            )).rows;
 
-        console.log(games.rows);
+            res.send(games);
+            return;
+        }
+
+        const games = (await connection.query(
+            `SELECT games.*, categories.name AS "categoryName" FROM games JOIN categories ON games."categoryId" = categories.id WHERE games.name ILIKE ($1 || '%');`,
+            [name]
+        )).rows;
 
         res.send(games);
     } catch (error) {

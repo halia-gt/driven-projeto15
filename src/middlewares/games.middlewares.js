@@ -1,19 +1,23 @@
 import { connection } from "../database/db.js";
-import { gamesSchema } from "../schemas/games.schemas.js";
+import { gamesSchema, searchGameSchema } from "../schemas/games.schemas.js";
 
 async function gameSearchValidation(req, res, next) {
-    const { name } = req.params;
+    const { name } = req.query;
+    
     if (!name) {
         next();
+        return;
     }
 
-    try {
-        
-        
-    } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
+    const validation = searchGameSchema.validate({ name }, { abortEarly: false });
+    if (validation.error) {
+        const errors = validation.error.details.map(error => error.message);
+        res.status(422).send({ message: errors });
+        return;
     }
+
+    res.locals.name = name;
+    next();
 }
 
 async function gameBodyValidation(req, res, next) {
