@@ -20,6 +20,23 @@ async function readCustomers(req, res) {
     }
 }
 
+async function readSingleCustomer(req, res) {
+    const { id } = req.params;
+
+    try {
+        const customer = (await connection.query("SELECT * FROM customers WHERE id = $1;", [id])).rows[0];
+
+        if (!customer) {
+            res.status(404).send({ message: "Client not found" })
+        }
+
+        res.send(customer);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
 async function createCustomer(req, res) {
     const { name, phone, cpf, birthday } = res.locals.body;
 
@@ -35,5 +52,6 @@ async function createCustomer(req, res) {
 
 export {
     readCustomers,
+    readSingleCustomer,
     createCustomer,
 }
