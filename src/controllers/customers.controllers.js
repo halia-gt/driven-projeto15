@@ -21,20 +21,9 @@ async function readCustomers(req, res) {
 }
 
 async function readSingleCustomer(req, res) {
-    const { id } = req.params;
+    const { customer } = res.locals;
 
-    try {
-        const customer = (await connection.query("SELECT * FROM customers WHERE id = $1;", [id])).rows[0];
-
-        if (!customer) {
-            res.status(404).send({ message: "Client not found" })
-        }
-
-        res.send(customer);
-    } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
-    }
+    res.send(customer);
 }
 
 async function createCustomer(req, res) {
@@ -50,8 +39,23 @@ async function createCustomer(req, res) {
     }
 }
 
+async function updateCustomer(req, res) {
+    const { customer } = res.locals;
+    const { name, phone, cpf, birthday } = res.locals.body;
+
+    try {
+        await connection.query("UPDATE customers SET name = $1, phone = $2, cpf = $3, birthday = $4 WHERE id = $5;", [name, phone, cpf, birthday, customer.id]);
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
 export {
     readCustomers,
     readSingleCustomer,
     createCustomer,
+    updateCustomer
 }

@@ -35,19 +35,45 @@ async function customerBodyValidation(req, res, next) {
         return;
     }
 
+    res.locals.body = {
+        name,
+        phone,
+        cpf,
+        birthday
+    }
+
+    next();
+}
+
+async function uniqueCustomerValidation(req, res, next) {
+    const { cpf } = res.locals.body;
+
     try {
-        const repeatedClient = (await connection.query("SELECT * FROM customers WHERE cpf = $1;", [cpf])).rows[0];
-        if (repeatedClient) {
+        const repeatedCustomer = (await connection.query("SELECT * FROM customers WHERE cpf = $1;", [cpf])).rows[0];
+        if (repeatedCustomer) {
             res.status(409).send({ message: "Customer already registered" });
             return;
         }
 
-        res.locals.body = {
-            name,
-            phone,
-            cpf,
-            birthday
+        next();
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
+async function customerIdValidation(req, res, next) {
+    const { id } = req.params;
+
+    try {
+        const customer = (await connection.query("SELECT * FROM customers WHERE id = $1;", [id])).rows[0];
+
+        if (!customer) {
+            res.status(404).send({ message: "Client not found" });
+            return;
         }
+
+        res.locals.customer = customer;
         next();
     } catch (error) {
         console.log(error);
@@ -57,5 +83,7 @@ async function customerBodyValidation(req, res, next) {
 
 export {
     customersSearchValidation,
-    customerBodyValidation
+    customerBodyValidation,
+    uniqueCustomerValidation,
+    customerIdValidation
 };
