@@ -90,11 +90,6 @@ async function rentalIdValidation(req, res, next) {
             return;
         }
 
-        if (rental.returnDate) {
-            res.status(400).send({ message: "Rent has already been concluded" });
-            return;
-        }
-
         res.locals.rental = rental;
         next();
     } catch (error) {
@@ -103,10 +98,34 @@ async function rentalIdValidation(req, res, next) {
     }
 }
 
+async function rentalNotReturnedValidation(req, res, next) {
+    const { rental } = res.locals;
+
+    if (rental.returnDate) {
+        res.status(400).send({ message: "Rent has already been concluded" });
+        return;
+    }
+
+    next();
+}
+
+async function rentalReturnedValidation(req, res, next) {
+    const { rental } = res.locals;
+
+    if (!rental.returnDate) {
+        res.status(400).send({ message: "Rent is still open" });
+        return;
+    }
+
+    next();
+}
+
 export {
     rentalBodyValidation,
     rentalCustomerValidation,
     rentalGameValidation,
     rentalsPossibilityValidation,
-    rentalIdValidation
+    rentalIdValidation,
+    rentalNotReturnedValidation,
+    rentalReturnedValidation
 }

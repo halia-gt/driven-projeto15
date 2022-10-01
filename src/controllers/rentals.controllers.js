@@ -92,8 +92,22 @@ async function updateRental(req, res) {
     }
 }
 
+async function deleteRental(req, res) {
+    const { rental } = res.locals;
+
+    try {
+        await connection.query("DELETE FROM rentals WHERE id = $1", [rental.id]);
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
 export {
     createRental,
     readRentals,
-    updateRental
+    updateRental,
+    deleteRental
 };
