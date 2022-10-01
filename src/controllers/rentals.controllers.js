@@ -3,7 +3,8 @@ import { connection } from "../database/db.js";
 async function createRental(req, res) {
     const { customerId, gameId, daysRented } = res.locals.body;
     const { game } = res.locals;
-    const date = new Date().toISOString();
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
 
     try {
         await connection.query('INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1, $2, $3, $4, $5, $6, $7);', [customerId, gameId, date, daysRented, null, game.pricePerDay * daysRented, null]);
@@ -61,7 +62,38 @@ async function readRentals(req, res) {
     }
 }
 
+async function updateRental(req, res) {
+    const { rental } = res.locals;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffDays = (today - rental.rentDate) / (1000 * 60 * 60 * 24);
+    let delayFee = 0;
+
+    if (diffDays > rental.daysRented) {
+        delayFee = rental.originalPrice * (diffDays - rental.daysRented);
+    }
+
+    console.log({
+        rentDate: rental.rentDate,
+        originalPrice: rental.originalPrice,
+        daysRented: rental.daysRented,
+        today,
+        diffDays,
+        delayFee
+    })
+
+    try {
+        await connection.query('UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3;', [today, delayFee, rental.id]);
+        
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
 export {
     createRental,
-    readRentals
+    readRentals,
+    updateRental
 };

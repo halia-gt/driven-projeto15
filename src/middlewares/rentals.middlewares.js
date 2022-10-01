@@ -96,7 +96,7 @@ async function rentalIdValidation(req, res, next) {
         }
 
         res.locals.rental = rental;
-        res.send('Teste');
+        next();
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
