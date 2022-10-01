@@ -22,40 +22,23 @@ async function readRentals(req, res) {
 
     try {
         if (customer && game) {
-            rentals = (await connection.query(`SELECT rentals.*, json_agg(customers.*) AS customer, json_agg(games.*) AS game, json_agg(categories.name) AS "categoryName" FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id WHERE rentals."customerId" = $1 AND rentals."gameId" = $2 GROUP BY rentals.id;`, [customer.id, game.id])).rows;
+            rentals = (await connection.query(`SELECT rentals.*, json_build_object('id', customers.id, 'name', customers.name) AS customer, json_build_object('id', games.id, 'name', games.name, 'categoryId', games."categoryId", 'categoryName', categories.name) AS game FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id WHERE rentals."customerId" = $1 AND rentals."gameId" = $2;`, [customer.id, game.id])).rows;
 
         } else if (customer && !game) {
-            rentals = (await connection.query(`SELECT rentals.*, json_agg(customers.*) AS customer, json_agg(games.*) AS game, json_agg(categories.name) AS "categoryName" FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id WHERE rentals."customerId" = $1 GROUP BY rentals.id;`, [customer.id])).rows;
+            rentals = (await connection.query(`SELECT rentals.*, json_build_object('id', customers.id, 'name', customers.name) AS customer, json_build_object('id', games.id, 'name', games.name, 'categoryId', games."categoryId", 'categoryName', categories.name) AS game FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id WHERE rentals."customerId" = $1;`, [customer.id])).rows;
 
         } else if (!customer && game) {
-            rentals = (await connection.query(`SELECT rentals.*, json_agg(customers.*) AS customer, json_agg(games.*) AS game, json_agg(categories.name) AS "categoryName" FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id WHERE rentals."gameId" = $1 GROUP BY rentals.id;`, [game.id])).rows;
+            rentals = (await connection.query(`SELECT rentals.*, json_build_object('id', customers.id, 'name', customers.name) AS customer, json_build_object('id', games.id, 'name', games.name, 'categoryId', games."categoryId", 'categoryName', categories.name) AS game FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id WHERE rentals."gameId" = $1;`, [game.id])).rows;
 
         } else {
-            rentals = (await connection.query('SELECT rentals.*, json_agg(customers.*) AS customer, json_agg(games.*) AS game, json_agg(categories.name) AS "categoryName" FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id GROUP BY rentals.id;')).rows;
+            rentals = (await connection.query(`SELECT rentals.*, json_build_object('id', customers.id, 'name', customers.name) AS customer, json_build_object('id', games.id, 'name', games.name, 'categoryId', games."categoryId", 'categoryName', categories.name) AS game FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id;`)).rows;
         }
 
-        const cleanRentals = rentals.map(obj => {
-            const rental = {...obj,
-                game: {
-                    ...obj.game[0],
-                    categoryName: obj.categoryName[0]
-                },
-                customer: {
-                    ...obj.customer[0]
-                }
-            };
-            delete rental.categoryName;
-            delete rental. game.image;
-            delete rental. game.stockTotal;
-            delete rental. game.pricePerDay;
-            delete rental.customer.phone;
-            delete rental.customer.cpf;
-            delete rental.customer.birthday;
-
-            return rental;
+        rentals.forEach(rent => {
+            rent.rentDate = rent.rentDate.toISOString().split('T')[0];
         });
 
-        res.send(cleanRentals);
+        res.send(rentals);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
