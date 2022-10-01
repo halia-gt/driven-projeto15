@@ -42,8 +42,7 @@ async function readRentals(req, res) {
             return rental;
         });
 
-        res.send(rentals);
-        
+        res.send(cleanRentals);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);

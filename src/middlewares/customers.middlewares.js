@@ -81,9 +81,35 @@ async function customerIdValidation(req, res, next) {
     }
 }
 
+async function customerIdSearchValidation(req, res, next) {
+    const { customerId } = req.query;
+    if (!customerId) {
+        next();
+        return;
+    }
+
+    try {
+        const customer = (await connection.query("SELECT * FROM customers WHERE id = $1;", [customerId])).rows[0];
+
+        if (!customer) {
+            res.status(404).send({ message: "Client not found" });
+            return;
+        }
+
+        res.locals.customer = customer;
+        next();
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
+
+
 export {
     customersSearchValidation,
     customerBodyValidation,
     uniqueCustomerValidation,
-    customerIdValidation
+    customerIdValidation,
+    customerIdSearchValidation
 };
