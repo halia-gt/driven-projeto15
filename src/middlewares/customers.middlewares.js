@@ -81,6 +81,25 @@ async function customerIdValidation(req, res, next) {
     }
 }
 
+async function customerCPFValidation(req, res, next) {
+    const { customer } = res.locals;
+    const { cpf } = res.locals.body;
+
+    try {
+        const customerCPF = (await connection.query("SELECT * FROM customers WHERE cpf = $1;", [cpf])).rows[0];
+
+        if (customerCPF && customerCPF.id !== customer.id) {
+            res.sendStatus(400);
+            return;
+        }
+
+        next();
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
 async function customerIdSearchValidation(req, res, next) {
     const { customerId } = req.query;
     if (!customerId) {
@@ -104,12 +123,11 @@ async function customerIdSearchValidation(req, res, next) {
     }
 }
 
-
-
 export {
     customersSearchValidation,
     customerBodyValidation,
     uniqueCustomerValidation,
     customerIdValidation,
+    customerCPFValidation,
     customerIdSearchValidation
 };

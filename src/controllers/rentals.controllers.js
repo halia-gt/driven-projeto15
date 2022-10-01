@@ -53,7 +53,7 @@ async function updateRental(req, res) {
     let delayFee = 0;
 
     if (diffDays > rental.daysRented) {
-        delayFee = rental.originalPrice * (diffDays - rental.daysRented);
+        delayFee = (rental.originalPrice/rental.daysRented) * (diffDays - rental.daysRented);
     }
 
     console.log({
@@ -79,7 +79,7 @@ async function deleteRental(req, res) {
     const { rental } = res.locals;
 
     try {
-        await connection.query("DELETE FROM rentals WHERE id = $1", [rental.id]);
+        await connection.query("DELETE FROM rentals WHERE id = $1;", [rental.id]);
 
         res.sendStatus(200);
     } catch (error) {
