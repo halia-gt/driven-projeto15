@@ -79,9 +79,34 @@ async function rentalsPossibilityValidation(req, res, next) {
     }
 }
 
+async function rentalIdValidation(req, res, next) {
+    const { id } = req.params;
+
+    try {
+        const rental = (await connection.query("SELECT * FROM rentals WHERE id = $1;", [id])).rows[0];
+
+        if (!rental) {
+            res.status(404).send({ message: "Rental not found" });
+            return;
+        }
+
+        if (rental.returnDate) {
+            res.status(400).send({ message: "Rent has already been concluded" });
+            return;
+        }
+
+        res.locals.rental = rental;
+        res.send('Teste');
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
 export {
     rentalBodyValidation,
     rentalCustomerValidation,
     rentalGameValidation,
-    rentalsPossibilityValidation
+    rentalsPossibilityValidation,
+    rentalIdValidation
 }
