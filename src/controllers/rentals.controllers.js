@@ -56,15 +56,6 @@ async function updateRental(req, res) {
         delayFee = (rental.originalPrice/rental.daysRented) * (diffDays - rental.daysRented);
     }
 
-    console.log({
-        rentDate: rental.rentDate,
-        originalPrice: rental.originalPrice,
-        daysRented: rental.daysRented,
-        today,
-        diffDays,
-        delayFee
-    })
-
     try {
         await connection.query('UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3;', [today, delayFee, rental.id]);
         
